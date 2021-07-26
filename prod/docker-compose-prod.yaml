@@ -1,0 +1,66 @@
+
+version: '2.2'
+services:
+  es0:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.13.3
+    container_name: es0
+    environment:
+      - node.name=es0
+      - cluster.name=es-docker-cluster
+      - discovery.seed_hosts=es1,es2
+      - cluster.initial_master_nodes=es0,es1,es2
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    networks:
+      - es-net
+  es1:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.13.3
+    container_name: es1
+    environment:
+      - node.name=es1
+      - cluster.name=es-docker-cluster
+      - discovery.seed_hosts=es0,es2
+      - cluster.initial_master_nodes=es0,es1,es2
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    networks:
+      - es-net
+  es2:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.13.3
+    container_name: es2
+    environment:
+      - node.name=es2
+      - cluster.name=es-docker-cluster
+      - discovery.seed_hosts=es0,es1
+      - cluster.initial_master_nodes=es0,es1,es2
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    networks:
+      - es-net
+
+  client-es:
+    build: ../
+    links:
+      - "es0:es"
+    networks:
+      - es-net
+    restart: on-failure
+
+networks:
+  es-net:
+    driver: bridge

@@ -1,0 +1,44 @@
+<%
+    def get_nodes_names_no_current(current_node_name,nodes_names):
+      nodes_names_no_current=list(filter(lambda node_name:node_name!=current_node_name,nodes_names))
+      return ",".join(nodes_names_no_current)
+
+    nodes_names=[node_base_name+str(i) for i in range(nodes_number) ]
+%>
+version: '2.2'
+services:
+% for i in range(nodes_number):
+  ${node_base_name}${i}:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.13.3
+    container_name: ${node_base_name}${i}
+    environment:
+      - node.name=${node_base_name}${i}
+      - cluster.name=es-docker-cluster
+      - discovery.seed_hosts=${get_nodes_names_no_current(node_base_name+str(i),nodes_names)}
+      - cluster.initial_master_nodes=${",".join(nodes_names)}
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    % if i==0 :
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    % endif
+    networks:
+      - es-net
+% endfor
+
+  client-es:
+    build: ../
+    links:
+      - "${node_base_name}0:${node_base_name}"
+    networks:
+      - es-net
+    restart: on-failure
+
+networks:
+  es-net:
+    driver: bridge

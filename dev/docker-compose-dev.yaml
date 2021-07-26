@@ -1,0 +1,23 @@
+version: '3'
+services:
+  es:
+    container_name: es
+    environment:
+      - discovery.type=single-node
+    image: "elasticsearch:7.13.2"
+    networks:
+      - es-net
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+  client-es:
+    build: ../
+    links:
+      - "es:es"
+    networks:
+      - es-net
+    restart: on-failure
+networks:
+  es-net:
+    driver: bridge
+

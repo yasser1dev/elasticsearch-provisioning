@@ -1,0 +1,3 @@
+FROM alpine:3.14
+RUN apk add curl
+CMD curl http://${elasticsearch_node_name}:9200
