@@ -2,6 +2,8 @@ from mako.template import Template
 import sys,os
 
 
+
+# write the generated file from the template into a file
 def write_rendered_template_to_file(content, filename):
     try:
         file = open(filename, "w")
@@ -11,7 +13,7 @@ def write_rendered_template_to_file(content, filename):
     except:
         print("error while writing the content of the rendered template")
 
-
+# check the validity of the provided arguments while launching the script
 def check_arguments(arguments_list):
     arguments_size = len(arguments_list)
     error_message = "-> python3 main.py [ dev <node-name> | prod <nodes-base-name> <nodes-number> ]"
@@ -28,7 +30,7 @@ def check_arguments(arguments_list):
     else:
         return True
 
-
+# generate the dockerfile of the elasticsearch client
 def generate_client_dockerfile(elastic_search_container_name):
     try:
         dockerfile_template=Template(filename="dockerfile-tmp")
@@ -37,9 +39,10 @@ def generate_client_dockerfile(elastic_search_container_name):
         print("error while generating dockerfile")
     write_rendered_template_to_file(rendered_template,"dockerfile")
 
+# launch the provisioning by providing the command as an argument
 def launch_provisioning(command):
     os.system(command)
-
+# provision the dev enviroment
 def provision_dev_enviromnt(arguments):
     node_base_name_arg = arguments[2]
     docker_compose_file_path = "dev/docker-compose-dev.yaml"
@@ -54,7 +57,7 @@ def provision_dev_enviromnt(arguments):
     except:
         print("-> error while rendering template")
 
-
+# provision the prod  enviroment
 def provision_prod_enviromnt(arguments):
     node_base_name_arg = arguments[2]
     nodes_number_cluster = int(arguments[3])
